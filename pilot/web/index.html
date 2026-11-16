@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>随机导览试点 · 离线派号工作台</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <h1>随机导览试点工作台</h1>
+  <p class="sub">按展区等量 A/B 随机号包 · 设备离线派号 · 回传冲突隔离 · 关场后批准分析</p>
+  <div id="flash" class="flash hidden"></div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="batches" class="active">批次与发号</button>
+  <button data-tab="segments">号段回收</button>
+  <button data-tab="disputes">争议隔离</button>
+  <button data-tab="close">关场与分析</button>
+  <button data-tab="audit">审计轨迹</button>
+</nav>
+
+<main>
+  <!-- 批次与发号 -->
+  <section id="tab-batches" class="tab">
+    <div class="card">
+      <h2>预生成随机号包</h2>
+      <form id="form-batch" class="row">
+        <label>展区 <input name="zone" required placeholder="如 水世界"></label>
+        <label>每方案号量 <input name="qty_per_arm" type="number" min="1" value="10" required></label>
+        <label>随机种子（可空）<input name="seed" type="number" placeholder="留空则系统生成"></label>
+        <button type="submit">生成等量 A/B 号包</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>批次总览</h2>
+      <table id="table-batches">
+        <thead><tr>
+          <th>批次</th><th>展区</th><th>状态</th><th>号码池（未用/已派/完成/回收）</th>
+          <th>号段（在用/交回）</th><th>未决争议</th><th>分析</th><th>操作</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="card hidden" id="card-detail">
+      <h2>批次详情 <span id="detail-title"></span></h2>
+      <div id="detail-body"></div>
+    </div>
+    <div class="card hidden" id="card-assign">
+      <h2>分配号段给设备（已领号段不转拨）</h2>
+      <form id="form-assign" class="row">
+        <label>设备编号 <input name="device_id" required placeholder="如 D1"></label>
+        <label>号段大小（留空=全部剩余）<input name="size" type="number" min="1"></label>
+        <button type="submit">分配并下载签名号包</button>
+      </form>
+      <pre id="package-out" class="package"></pre>
+    </div>
+  </section>
+
+  <!-- 号段回收 -->
+  <section id="tab-segments" class="tab hidden">
+    <div class="card">
+      <h2>设备交回</h2>
+      <p class="hint">设备交回未用号后才可关场；已派号保留在分母中，仅回收未用号。</p>
+      <form id="form-return" class="row">
+        <label>批次 <input name="batch_id" required></label>
+        <label>号段 <input name="segment_id" required></label>
+        <button type="submit">交回号段</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>回传合并（设备联网后调用，支持重试）</h2>
+      <form id="form-upload">
+        <textarea name="payload" rows="10" placeholder='粘贴设备 upload JSON：{"upload_id":...,"events":[...]}'></textarea>
+        <button type="submit">合并回传</button>
+      </form>
+      <pre id="upload-out" class="package"></pre>
+    </div>
+  </section>
+
+  <!-- 争议 -->
+  <section id="tab-disputes" class="tab hidden">
+    <div class="card">
+      <h2>争议隔离区</h2>
+      <p class="hint">同次到访跨设备重复领号、同号内容冲突一律隔离；未解决前整场不出结论。</p>
+      <table id="table-disputes">
+        <thead><tr><th>ID</th><th>批次</th><th>号码</th><th>类型</th><th>状态</th>
+          <th>详情</th><th>处理</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 关场与分析 -->
+  <section id="tab-close" class="tab hidden">
+    <div class="card">
+      <h2>关场</h2>
+      <form id="form-close" class="row">
+        <label>批次 <input name="batch_id" required></label>
+        <button type="submit" class="warn">关场（所有设备交回后）</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>分析（ITT 口径）</h2>
+      <p class="hint">完成者换方案按原分配统计，未完成者保留分母；关场且无未决争议才可生成，重试不重复建分析。</p>
+      <form id="form-analysis" class="row">
+        <label>批次 <input name="batch_id" required></label>
+        <button type="submit">生成/查看分析</button>
+        <button type="button" id="btn-approve">批准</button>
+        <button type="button" id="btn-distribute">标记分发</button>
+      </form>
+      <pre id="analysis-out" class="package"></pre>
+    </div>
+  </section>
+
+  <!-- 审计 -->
+  <section id="tab-audit" class="tab hidden">
+    <div class="card">
+      <h2>审计轨迹</h2>
+      <table id="table-audit">
+        <thead><tr><th>时间</th><th>操作者</th><th>动作</th><th>对象</th><th>详情</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

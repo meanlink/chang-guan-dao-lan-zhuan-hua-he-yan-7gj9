@@ -1,0 +1,9 @@
+pilot_data/
+__pycache__/
+*.pyc
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+package.key
+device_*/
+.venv/
